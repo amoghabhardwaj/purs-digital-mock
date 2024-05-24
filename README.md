@@ -1,1 +1,5 @@
 # purs-digital-mock
+
+
+
+PLEASE GO THROUGH THE PDF ATTACHED FOR DOCUMENTATION.
