@@ -102,67 +102,7 @@ object TimeUtils {
     }
 
     // Function to determine the opening status of the restaurant
-    fun determineOpeningStatus(currentDay: String, currentTime: String, hoursList: List<Hours>): String {
-        val todayHours = hoursList.filter { it.day_of_week == currentDay }
-        val todayTimes = todayHours.sortedBy { it.start_local_time }
 
-        val currentTimeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        val currentDate = currentTimeFormat.parse(currentTime)
-
-        for (i in todayTimes.indices) {
-            val startTime = currentTimeFormat.parse(todayTimes[i].start_local_time)
-            val endTimeString = todayTimes[i].end_local_time
-            var endTime = currentTimeFormat.parse(endTimeString)
-
-            // Handle special case where end time is "24:00:00"
-            if (endTimeString == "24:00:00") {
-                endTime = currentTimeFormat.parse("00:00:00") // Set to midnight
-
-                // Check if it's open 24 hours
-                if (todayTimes[i].start_local_time == "00:00:00") {
-                    return "Open 24 hours"
-                }
-
-                // Display "Open until midnight"
-                val nextDay = getNextDay(todayTimes[i].day_of_week)
-                val nextDayFormatted = convertTo12HourFormat("00:00:00")
-
-                // Check if current time is before "24:00:00" (midnight)
-                if (currentDate != null && currentDate.before(endTime)) {
-                    return "Open until ${convertTo12HourFormat("23:59:59")}, reopens at $nextDayFormatted"
-                }
-
-                return "Open until midnight"
-            }
-
-            if (currentDate != null) {
-                if (currentDate.after(startTime) && currentDate.before(endTime)) {
-                    val nextTimeBlock = getNextTimeBlock(todayTimes[i].end_local_time, todayTimes)
-                    return if (nextTimeBlock != null) {
-                        "Open until ${convertTo12HourFormat(todayTimes[i].end_local_time)}, reopens at ${convertTo12HourFormat(nextTimeBlock)}"
-                    } else {
-                        "Open until ${convertTo12HourFormat(todayTimes[i].end_local_time)}"
-                    }
-                } else if (currentDate.before(startTime)) {
-                    return "Opens again at ${convertTo12HourFormat(todayTimes[i].start_local_time)}"
-                }
-            }
-        }
-
-        // Handle case when the shop is closed today
-        var nextDay = getNextDay(currentDay)
-        while (hoursList.none { it.day_of_week == nextDay }) {
-            nextDay = getNextDay(nextDay)
-        }
-
-        val nextDayHours = hoursList.filter { it.day_of_week == nextDay }
-            .sortedBy { it.start_local_time }
-            .firstOrNull()
-
-        return nextDayHours?.let {
-            "Opens ${nextDay} ${convertTo12HourFormat(it.start_local_time)}"
-        } ?: "Closed"
-    }
 
 
     // Helper function to get the next day of the week
