@@ -53,7 +53,7 @@ object TimeUtils {
             val parts = time.split(":")
             var hours = parts[0].toInt()
             val minutes = parts[1]
-            val ampm = if (hours < 12) "AM" else "PM"
+            val ampm = if (hours==24) "AM" else if (hours < 12) "AM" else "PM"
             if (hours > 12) hours -= 12
             if (hours == 0) hours = 12
             return "$hours:$minutes $ampm"
@@ -101,7 +101,6 @@ object TimeUtils {
         }
     }
 
-    
     // Function to determine the opening status of the restaurant
     fun determineOpeningStatus(currentDay: String, currentTime: String, hoursList: List<Hours>): String {
         val todayHours = hoursList.filter { it.day_of_week == currentDay }
@@ -150,12 +149,18 @@ object TimeUtils {
             }
         }
 
-        val nextDayHours = hoursList.filter { it.day_of_week != currentDay }
-            .sortedBy { it.day_of_week }
+        // Handle case when the shop is closed today
+        var nextDay = getNextDay(currentDay)
+        while (hoursList.none { it.day_of_week == nextDay }) {
+            nextDay = getNextDay(nextDay)
+        }
+
+        val nextDayHours = hoursList.filter { it.day_of_week == nextDay }
+            .sortedBy { it.start_local_time }
             .firstOrNull()
 
         return nextDayHours?.let {
-            "Opens ${it.day_of_week} ${convertTo12HourFormat(it.start_local_time)}"
+            "Opens ${nextDay} ${convertTo12HourFormat(it.start_local_time)}"
         } ?: "Closed"
     }
 
